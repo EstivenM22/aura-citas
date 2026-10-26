@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURA | Citas del Futuro</title>
+<meta name="description" content="Demo front-end de AURA: agenda citas en clínicas y salones en menos de un minuto.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Crect width='44' height='40' rx='8' fill='%230a0e17'/%3E%3Cg fill='none' stroke='%237be9e0' stroke-width='2.4'%3E%3Crect x='6' y='20' width='8' height='16' rx='4'/%3E%3Crect x='18' y='6' width='8' height='30' rx='4'/%3E%3Crect x='30' y='13' width='8' height='23' rx='4'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Unbounded:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #111926;
+    --deep: #0a0e17;
+    --panel: rgba(255, 255, 255, 0.05);
+    --panel-strong: rgba(255, 255, 255, 0.09);
+    --line: rgba(255, 255, 255, 0.11);
+    --text: #eef3f8;
+    --muted: #98a3b3;
+    --mint: #7be9e0;
+    --teal: #53d8c7;
+    --leaf: #a7edb9;
+    --sage: #566150;
+    --ocean: #14566b;
+    --coral: #f08a8a;
+    --glow: 123, 233, 224;
+    --radius: 22px;
+    --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+    --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    min-height: 100vh;
+    background: var(--void);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 1rem;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  :focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 8px; }
+
+  /* Fondo: tres esferas de luz que flotan despacio */
+  .orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; animation: drift 22s ease-in-out infinite alternate; }
+  .orb.a { width: 46vw; height: 46vw; left: -12vw; top: -10vw; background: radial-gradient(circle, var(--mint), transparent 65%); opacity: 0.26; }
+  .orb.b { width: 40vw; height: 40vw; right: -10vw; top: 18vh; background: radial-gradient(circle, var(--sage), transparent 65%); animation-duration: 28s; opacity: 0.55; }
+  .orb.c { width: 36vw; height: 36vw; left: 30vw; bottom: -18vw; background: radial-gradient(circle, var(--ocean), transparent 65%); animation-duration: 25s; opacity: 0.6; }
+  @keyframes drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(4vw, 5vh, 0) scale(1.12); } }
+
+  .wrap { position: relative; z-index: 1; width: min(1120px, 100% - 32px); margin-inline: auto; }
+
+  /* Cabecera */
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 600; font-size: 1.25rem; letter-spacing: 0.14em; color: var(--text); text-decoration: none; }
+  .brand-mark { width: 38px; height: 34px; flex: none; overflow: visible; filter: drop-shadow(0 0 6px rgba(123, 233, 224, 0.7)) drop-shadow(0 0 14px rgba(123, 233, 224, 0.35)); }
+  .brand-mark rect { fill: rgba(123, 233, 224, 0.07); stroke: var(--mint); stroke-width: 1.7; }
+  nav.links { display: flex; gap: 6px; }
+  nav.links a { color: var(--muted); text-decoration: none; padding: 8px 14px; border-radius: 999px; transition: color 0.2s, background 0.2s; }
+  nav.links a:hover { color: var(--text); background: var(--panel); }
+
+  /* Cristal */
+  .glass {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 56px; align-items: center; padding: 36px 0 72px; }
+  .hero-copy > * { animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .hero-copy > :nth-child(2) { animation-delay: 0.1s; }
+  .hero-copy > :nth-child(3) { animation-delay: 0.2s; }
+  .hero-copy > :nth-child(4) { animation-delay: 0.3s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  h1 { font-family: var(--display); font-weight: 600; font-size: clamp(2rem, 4.6vw, 3.5rem); line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; }
+  .lead { margin-top: 22px; color: var(--muted); font-size: 1.1rem; max-width: 46ch; }
+  .perks { margin-top: 26px; padding: 0; list-style: none; display: grid; gap: 12px; }
+  .perks li { display: flex; align-items: center; gap: 12px; }
+  .perks li::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 14px var(--c); }
+  .perks li:nth-child(1) { --c: var(--mint); }
+  .perks li:nth-child(2) { --c: var(--teal); }
+  .perks li:nth-child(3) { --c: var(--leaf); }
+  .cta-row { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+
+  .btn { font: inherit; font-weight: 600; border: 1px solid transparent; border-radius: 14px; padding: 13px 22px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.15s, box-shadow 0.2s, background 0.2s, opacity 0.2s; }
+  .btn-primary { background: var(--mint); color: #071a1f; box-shadow: 0 0 26px rgba(123, 233, 224, 0.45); }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 36px rgba(123, 233, 224, 0.7); }
+  .btn-ghost { background: var(--panel); border-color: var(--line); color: var(--text); }
+  .btn-ghost:hover { background: var(--panel-strong); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-small { padding: 8px 14px; border-radius: 10px; font-size: 0.9rem; }
+  .btn-danger { background: transparent; border-color: rgba(240, 138, 138, 0.55); color: #f4a3a3; }
+  .btn-danger:hover { background: rgba(240, 138, 138, 0.14); }
+
+  /* Tarjeta de reserva */
+  .stage { perspective: 1100px; }
+  .booking {
+    --glow: 123, 233, 224;
+    padding: 26px;
+    transform-style: preserve-3d;
+    transition: transform 0.25s ease-out, box-shadow 0.5s, border-color 0.5s;
+    border-color: rgba(var(--glow), 0.45);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 24px 60px rgba(0, 0, 0, 0.45), 0 0 54px rgba(var(--glow), 0.28);
+    animation: rise 0.9s 0.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .booking[data-step="2"] { --glow: 167, 237, 185; }
+  .booking[data-step="3"] { --glow: 83, 216, 199; }
+  .booking[data-step="4"] { --glow: 123, 233, 224; }
+
+  .rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0 0 22px; padding: 0; list-style: none; }
+  .rail li { font-size: 0.82rem; color: var(--muted); }
+  .rail li::before { content: ""; display: block; height: 4px; border-radius: 4px; background: var(--line); margin-bottom: 8px; transition: background 0.4s, box-shadow 0.4s; }
+  .rail li.done::before, .rail li.now::before { background: rgb(var(--glow)); box-shadow: 0 0 12px rgba(var(--glow), 0.8); }
+  .rail li.now { color: var(--text); font-weight: 600; }
+
+  .booking h2 { font-family: var(--display); font-weight: 500; font-size: 1.15rem; margin-bottom: 14px; letter-spacing: -0.01em; }
+  .seg { display: inline-grid; grid-auto-flow: column; gap: 4px; padding: 4px; background: rgba(0, 0, 0, 0.3); border-radius: 14px; margin-bottom: 16px; }
+  .seg button { font: inherit; color: var(--muted); background: none; border: 0; padding: 8px 18px; border-radius: 10px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+  .seg button[aria-pressed="true"] { background: var(--panel-strong); color: var(--text); box-shadow: inset 0 0 0 1px rgba(var(--glow), 0.5); }
+
+  .choices { display: grid; gap: 10px; }
+  .choice { font: inherit; text-align: left; color: var(--text); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 14px; transition: transform 0.15s, border-color 0.2s, background 0.2s; }
+  .choice:hover { transform: translateX(4px); border-color: rgba(var(--glow), 0.7); background: rgba(255, 255, 255, 0.08); }
+  .choice strong { display: block; font-weight: 600; }
+  .choice small { color: var(--muted); }
+  .badge { flex: none; font-size: 0.85rem; padding: 4px 10px; border-radius: 999px; background: rgba(var(--glow), 0.15); color: rgb(var(--glow)); }
+
+  .days { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 8px; margin-bottom: 18px; }
+  .day, .slot { font: inherit; color: var(--text); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; cursor: pointer; text-align: center; transition: border-color 0.2s, background 0.2s, transform 0.15s; }
+  .day { display: grid; line-height: 1.25; }
+  .day span { font-size: 0.78rem; color: var(--muted); text-transform: capitalize; }
+  .day b { font-size: 1.15rem; }
+  .day:hover, .slot:hover:not(:disabled) { border-color: rgba(var(--glow), 0.8); transform: translateY(-2px); }
+  .day[aria-pressed="true"], .slot[aria-pressed="true"] { background: rgba(var(--glow), 0.18); border-color: rgb(var(--glow)); box-shadow: 0 0 18px rgba(var(--glow), 0.35); }
+  .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+  .slot:disabled { opacity: 0.32; text-decoration: line-through; cursor: not-allowed; }
+  .hint { color: var(--muted); font-size: 0.92rem; margin-bottom: 10px; }
+
+  .summary { display: grid; gap: 8px; padding: 14px 16px; border-radius: 16px; background: rgba(0, 0, 0, 0.28); border: 1px solid var(--line); margin-bottom: 16px; }
+  .summary div { display: flex; justify-content: space-between; gap: 16px; }
+  .summary span { color: var(--muted); }
+  .summary b { text-align: right; font-weight: 600; }
+  label.field { display: block; margin-bottom: 6px; font-weight: 600; }
+  input.text { width: 100%; font: inherit; color: var(--text); background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  input.text::placeholder { color: #6b7686; }
+  input.text:focus { outline: none; border-color: rgb(var(--glow)); box-shadow: 0 0 0 3px rgba(var(--glow), 0.25); }
+  .actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+
+  /* Secciones */
+  section.block { padding: 40px 0; }
+  section.block > h2 { font-family: var(--display); font-weight: 600; font-size: clamp(1.4rem, 2.8vw, 2rem); letter-spacing: -0.02em; margin-bottom: 8px; }
+  section.block > p.sub { color: var(--muted); margin-bottom: 24px; max-width: 58ch; }
+  .appts { display: grid; gap: 12px; }
+  .appt { padding: 18px 20px; display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; }
+  .appt-date { text-align: center; min-width: 64px; padding: 8px 10px; border-radius: 14px; background: rgba(167, 237, 185, 0.12); border: 1px solid rgba(167, 237, 185, 0.4); }
+  .appt-date b { display: block; font-family: var(--display); font-size: 1.4rem; line-height: 1.1; }
+  .appt-date span { font-size: 0.8rem; color: var(--muted); text-transform: capitalize; }
+  .appt h3 { font-size: 1.05rem; font-weight: 600; }
+  .appt p { color: var(--muted); font-size: 0.95rem; }
+  .empty { padding: 28px; text-align: center; color: var(--muted); }
+  .empty b { display: block; color: var(--text); margin-bottom: 4px; font-size: 1.05rem; }
+
+  .roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .roadmap article { padding: 24px; }
+  .roadmap h3 { font-size: 1.05rem; margin-bottom: 8px; }
+  .roadmap p { color: var(--muted); font-size: 0.97rem; }
+  .roadmap article:nth-child(1) { border-top: 2px solid var(--mint); }
+  .roadmap article:nth-child(2) { border-top: 2px solid var(--teal); }
+  .roadmap article:nth-child(3) { border-top: 2px solid var(--leaf); }
+
+  footer { position: relative; z-index: 1; text-align: center; color: var(--muted); font-size: 0.9rem; padding: 36px 16px 48px; }
+
+  .toast { position: fixed; z-index: 10; left: 50%; bottom: 26px; transform: translate(-50%, 24px); opacity: 0; pointer-events: none; padding: 12px 20px; border-radius: 14px; background: rgba(10, 14, 23, 0.94); border: 1px solid var(--leaf); box-shadow: 0 0 26px rgba(167, 237, 185, 0.4); transition: opacity 0.3s, transform 0.3s; max-width: calc(100% - 32px); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.warn { border-color: var(--coral); box-shadow: 0 0 26px rgba(240, 138, 138, 0.35); }
+
+  @media (max-width: 920px) {
+    .hero { grid-template-columns: 1fr; gap: 36px; padding-bottom: 40px; }
+    .roadmap { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    nav.links a:not(:last-child) { display: none; }
+    .booking { padding: 20px 16px; }
+    .appt { grid-template-columns: auto 1fr; }
+    .appt .btn { grid-column: 1 / -1; }
+    .rail li { font-size: 0.74rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="orbs" aria-hidden="true"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#inicio" aria-label="AURA, inicio"><svg class="brand-mark" viewBox="0 0 44 40" aria-hidden="true" focusable="false"><rect x="3" y="19" width="9" height="19" rx="4.5" transform="rotate(-4 7.5 28)"/><rect x="17" y="3" width="9" height="35" rx="4.5"/><rect x="31" y="11" width="9" height="27" rx="4.5"/></svg>AURA</a>
+    <nav class="links" aria-label="Principal">
+      <a href="#reservar">Reservar</a>
+      <a href="#citas">Mis citas</a>
+      <a href="#negocios">Para negocios</a>
+    </nav>
+  </header>
+
+  <main id="inicio">
+    <section class="hero">
+      <div class="hero-copy">
+        <h1>Reserva tu cita sin llamar a nadie.</h1>
+        <p class="lead">Elige el servicio, el profesional y el horario en menos de un minuto. Prueba el flujo aquí mismo: tu cita queda guardada en esta página.</p>
+        <ul class="perks">
+          <li>Solo ves los horarios que están libres</li>
+          <li>Tu cita aparece en Mis citas al instante</li>
+          <li>Cancelas con un toque, sin explicaciones</li>
+        </ul>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#reservar">Reservar ahora</a>
+          <a class="btn btn-ghost" href="#citas">Ver mis citas</a>
+        </div>
+      </div>
+
+      <div class="stage" id="reservar">
+        <div class="booking glass" id="booking" data-step="1" role="region" aria-label="Reservar una cita">
+          <ol class="rail" id="rail" aria-label="Progreso de la reserva"></ol>
+          <div id="panel"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="citas" aria-labelledby="citas-t">
+      <h2 id="citas-t">Mis citas</h2>
+      <p class="sub">Aquí aparecen las citas que reserves. Se guardan solo en este navegador.</p>
+      <div class="appts" id="appts"></div>
+    </section>
+
+    <section class="block" id="negocios" aria-labelledby="neg-t">
+      <h2 id="neg-t">Lo que viene en la versión completa</h2>
+      <p class="sub">Esta demo muestra la experiencia del cliente. La plataforma completa está pensada para clínicas y salones que quieren dejar de agendar por chat.</p>
+      <div class="roadmap">
+        <article class="glass"><h3>Recordatorios automáticos</h3><p>Avisos antes de cada cita para que menos personas olviden asistir.</p></article>
+        <article class="glass"><h3>Pagos en línea</h3><p>El cliente puede pagar o dejar un anticipo al reservar.</p></article>
+        <article class="glass"><h3>App móvil</h3><p>La misma agenda en el celular, para clientes y para el personal.</p></article>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>AURA, Citas del Futuro. Proyecto de portafolio con datos de ejemplo: nada se envía a ningún servidor.</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Datos de ejemplo ---------- */
+  var CATALOG = {
+    clinicas: {
+      label: "Clínicas",
+      services: [
+        { id: "general", name: "Medicina general", mins: 45, pros: [
+          { id: "c1", name: "Dra. Valentina Rojas", role: "Médica general" },
+          { id: "c2", name: "Dr. Sebastián Herrera", role: "Médico general" } ] },
+        { id: "odonto", name: "Odontología", mins: 30, pros: [
+          { id: "c3", name: "Dr. Andrés Mejía", role: "Odontólogo" },
+          { id: "c4", name: "Dra. Laura Cifuentes", role: "Odontóloga" } ] },
+        { id: "derma", name: "Dermatología", mins: 40, pros: [
+          { id: "c5", name: "Dra. Camila Ortiz", role: "Dermatóloga" },
+          { id: "c6", name: "Dr. Julián Vargas", role: "Dermatólogo" } ] }
+      ]
+    },
+    salones: {
+      label: "Salones",
+      services: [
+        { id: "corte", name: "Corte y peinado", mins: 60, pros: [
+          { id: "s1", name: "Mariana Soto", role: "Estilista" },
+          { id: "s2", name: "Felipe Castaño", role: "Estilista" } ] },
+        { id: "color", name: "Color y mechas", mins: 120, pros: [
+          { id: "s3", name: "Daniela Becerra", role: "Colorista" },
+          { id: "s4", name: "Tomás Aristizábal", role: "Colorista" } ] },
+        { id: "mani", name: "Manicure y pedicure", mins: 75, pros: [
+          { id: "s5", name: "Paula Giraldo", role: "Manicurista" },
+          { id: "s6", name: "Natalia Quintero", role: "Manicurista" } ] }
+      ]
+    }
+  };
+  var TIMES = ["08:00", "09:00", "10:30", "11:30", "14:00", "15:30", "16:30", "17:30"];
+  var STEPS = ["Servicio", "Profesional", "Horario", "Confirmar"];
+  var KEY = "aura-demo-citas";
+
+  /* ---------- Estado ---------- */
+  var state = { step: 1, cat: "clinicas", service: null, pro: null, date: null, time: null, name: "" };
+  var appts = load();
+
+  function load() {
+    try { var raw = localStorage.getItem(KEY); var data = raw ? JSON.parse(raw) : []; return Array.isArray(data) ? data : []; }
+    catch (e) { return []; }
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(appts)); } catch (e) { /* sin almacenamiento: la demo sigue funcionando en memoria */ } }
+
+  /* ---------- Utilidades ---------- */
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function keyOf(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function fromKey(k) { var p = k.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function hash(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+  function fmtTime(t) { var p = t.split(":").map(Number); return new Date(2000, 0, 1, p[0], p[1]).toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" }); }
+  function fmtLong(k) { return fromKey(k).toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" }); }
+  function nextDays() { var out = [], base = new Date(); for (var i = 0; i < 7; i++) { var d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i); out.push(keyOf(d)); } return out; }
+  function minutes(t) { var p = t.split(":").map(Number); return p[0] * 60 + p[1]; }
+
+  function isTaken(proId, dateKey, time) {
+    if (hash(proId + dateKey + time) % 3 === 0) return true;
+    return appts.some(function (a) { return a.proId === proId && a.date === dateKey && a.time === time; });
+  }
+  function isPast(dateKey, time) {
+    var now = new Date();
+    return dateKey === keyOf(now) && minutes(time) <= now.getHours() * 60 + now.getMinutes();
+  }
+
+  var toastTimer;
+  function toast(msg, warn) {
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "toast show" + (warn ? " warn" : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.className = "toast" + (warn ? " warn" : ""); }, 3200);
+  }
+
+  /* ---------- Reserva ---------- */
+  var booking = document.getElementById("booking");
+  var panel = document.getElementById("panel");
+  var rail = document.getElementById("rail");
+
+  function renderRail() {
+    rail.innerHTML = STEPS.map(function (label, i) {
+      var n = i + 1;
+      var cls = n < state.step ? "done" : n === state.step ? "now" : "";
+      return '<li class="' + cls + '"' + (n === state.step ? ' aria-current="step"' : "") + ">" + label + "</li>";
+    }).join("");
+    booking.dataset.step = String(state.step);
+  }
+
+  function currentService() { return CATALOG[state.cat].services.filter(function (s) { return s.id === state.service; })[0]; }
+  function currentPro() { var s = currentService(); return s ? s.pros.filter(function (p) { return p.id === state.pro; })[0] : null; }
+
+  function viewService() {
+    var cat = CATALOG[state.cat];
+    var seg = '<div class="seg" role="group" aria-label="Tipo de negocio">' + Object.keys(CATALOG).map(function (k) {
+      return '<button type="button" data-act="cat" data-v="' + k + '" aria-pressed="' + (k === state.cat) + '">' + CATALOG[k].label + "</button>";
+    }).join("") + "</div>";
+    var list = cat.services.map(function (s) {
+      return '<button type="button" class="choice" data-act="service" data-v="' + s.id + '"><span><strong>' + s.name + "</strong><small>" + s.pros.length + ' profesionales disponibles</small></span><span class="badge">' + s.mins + " min</span></button>";
+    }).join("");
+    return "<h2>¿Qué servicio necesitas?</h2>" + seg + '<div class="choices">' + list + "</div>";
+  }
+
+  function viewPro() {
+    var s = currentService();
+    var list = s.pros.map(function (p) {
+      return '<button type="button" class="choice" data-act="pro" data-v="' + p.id + '"><span><strong>' + p.name + "</strong><small>" + p.role + '</small></span><span class="badge">Elegir</span></button>';
+    }).join("");
+    return "<h2>Elige con quién quieres tu cita</h2>" + '<div class="choices">' + list + "</div>" + back();
+  }
+
+  function viewTime() {
+    var days = nextDays();
+    if (!state.date) {
+      state.date = days.filter(function (k) {
+        return TIMES.some(function (t) { return !isTaken(state.pro, k, t) && !isPast(k, t); });
+      })[0] || days[0];
+    }
+    var dayBtns = days.map(function (k) {
+      var d = fromKey(k);
+      var wd = d.toLocaleDateString("es-CO", { weekday: "short" }).replace(".", "");
+      return '<button type="button" class="day" data-act="date" data-v="' + k + '" aria-pressed="' + (k === state.date) + '"><span>' + wd + "</span><b>" + d.getDate() + "</b></button>";
+    }).join("");
+    var slotBtns = TIMES.map(function (t) {
+      var off = isTaken(state.pro, state.date, t) || isPast(state.date, t);
+      return '<button type="button" class="slot" data-act="time" data-v="' + t + '"' + (off ? " disabled" : "") + ' aria-pressed="' + (t === state.time) + '">' + fmtTime(t) + "</button>";
+    }).join("");
+    return "<h2>¿Cuándo te queda bien?</h2>" + '<div class="days">' + dayBtns + "</div>" +
+      '<p class="hint">Los horarios tachados ya están ocupados.</p><div class="slots">' + slotBtns + "</div>" + back();
+  }
+
+  function viewConfirm() {
+    var s = currentService(), p = currentPro();
+    return "<h2>Revisa y confirma</h2>" +
+      '<div class="summary">' +
+      "<div><span>Servicio</span><b>" + s.name + "</b></div>" +
+      "<div><span>Profesional</span><b>" + p.name + "</b></div>" +
+      "<div><span>Fecha</span><b>" + fmtLong(state.date) + "</b></div>" +
+      "<div><span>Hora</span><b>" + fmtTime(state.time) + "</b></div></div>" +
+      '<label class="field" for="nombre">Tu nombre</label>' +
+      '<input class="text" id="nombre" type="text" autocomplete="name" maxlength="60" placeholder="Por ejemplo: Ana Gómez" value="' + esc(state.name) + '">' +
+      '<div class="actions"><button type="button" class="btn btn-ghost" data-act="back">Atrás</button>' +
+      '<button type="button" class="btn btn-primary" id="confirmar" data-act="confirm"' + (state.name.trim() ? "" : " disabled") + ">Confirmar cita</button></div>";
+  }
+
+  function back() { return '<div class="actions"><button type="button" class="btn btn-ghost" data-act="back">Atrás</button><span></span></div>'; }
+
+  function render(focusPanel) {
+    renderRail();
+    var views = { 1: viewService, 2: viewPro, 3: viewTime, 4: viewConfirm };
+    panel.innerHTML = views[state.step]();
+    if (focusPanel) { var h = panel.querySelector("h2"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } }
+  }
+
+  panel.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-act]");
+    if (!btn || btn.disabled) return;
+    var act = btn.dataset.act, v = btn.dataset.v;
+    if (act === "cat") { state.cat = v; render(false); return; }
+    if (act === "service") { state.service = v; state.pro = null; state.time = null; state.step = 2; render(true); return; }
+    if (act === "pro") { state.pro = v; state.time = null; state.step = 3; render(true); return; }
+    if (act === "date") { state.date = v; state.time = null; render(false); return; }
+    if (act === "time") { state.time = v; state.step = 4; render(true); return; }
+    if (act === "back") { state.step = Math.max(1, state.step - 1); render(true); return; }
+    if (act === "confirm") { confirmBooking(); }
+  });
+
+  panel.addEventListener("input", function (e) {
+    if (e.target.id !== "nombre") return;
+    state.name = e.target.value;
+    var b = document.getElementById("confirmar");
+    if (b) b.disabled = !state.name.trim();
+  });
+  panel.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.id === "nombre" && state.name.trim()) { e.preventDefault(); confirmBooking(); }
+  });
+
+  function confirmBooking() {
+    var s = currentService(), p = currentPro();
+    if (!s || !p || !state.date || !state.time || !state.name.trim()) return;
+    if (isTaken(p.id, state.date, state.time)) { toast("Ese horario acaba de ocuparse. Elige otro.", true); state.step = 3; state.time = null; render(true); return; }
+    appts.push({ id: Date.now().toString(36), cat: state.cat, service: s.name, mins: s.mins, proId: p.id, pro: p.name, date: state.date, time: state.time, name: state.name.trim() });
+    save();
+    toast("Cita confirmada para " + fmtLong(state.date) + ", " + fmtTime(state.time));
+    state = { step: 1, cat: state.cat, service: null, pro: null, date: null, time: null, name: "" };
+    render(false);
+    renderAppts();
+    var list = document.getElementById("citas");
+    if (list && list.scrollIntoView) list.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
+
+  /* ---------- Mis citas ---------- */
+  var apptsEl = document.getElementById("appts");
+  function renderAppts() {
+    if (!appts.length) {
+      apptsEl.innerHTML = '<div class="glass empty"><b>Aún no tienes citas</b>Reserva la primera en el panel de arriba y aparecerá aquí.</div>';
+      return;
+    }
+    var sorted = appts.slice().sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time); });
+    apptsEl.innerHTML = sorted.map(function (a) {
+      var d = fromKey(a.date);
+      var wd = d.toLocaleDateString("es-CO", { weekday: "short" }).replace(".", "");
+      var mo = d.toLocaleDateString("es-CO", { month: "short" }).replace(".", "");
+      return '<article class="glass appt">' +
+        '<div class="appt-date"><b>' + d.getDate() + "</b><span>" + wd + ", " + mo + "</span></div>" +
+        "<div><h3>" + esc(a.service) + "</h3><p>" + esc(a.pro) + " a las " + fmtTime(a.time) + ", " + a.mins + " min. A nombre de " + esc(a.name) + ".</p></div>" +
+        '<button type="button" class="btn btn-small btn-danger" data-cancel="' + esc(a.id) + '">Cancelar cita</button></article>';
+    }).join("");
+  }
+  apptsEl.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-cancel]");
+    if (!b) return;
+    appts = appts.filter(function (a) { return a.id !== b.dataset.cancel; });
+    save(); renderAppts();
+    if (state.step === 3) render(false);
+    toast("Cita cancelada. El horario quedó libre otra vez.", true);
+  });
+
+  /* ---------- Inclinación 3D de la tarjeta ---------- */
+  var canTilt = window.matchMedia("(hover: hover) and (pointer: fine)").matches && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (canTilt) {
+    var stage = document.querySelector(".stage");
+    stage.addEventListener("pointermove", function (e) {
+      var r = booking.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+      booking.style.transform = "rotateY(" + (x * 6).toFixed(2) + "deg) rotateX(" + (-y * 6).toFixed(2) + "deg)";
+    });
+    stage.addEventListener("pointerleave", function () { booking.style.transform = ""; });
+  }
+
+  render(false);
+  renderAppts();
+})();
+</script>
+</body>
+</html>
